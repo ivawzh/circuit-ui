@@ -16,9 +16,9 @@
 import React from 'react';
 
 import Step from './Step';
-import useStep from './hooks/use-step';
+import useStep from './hooks/useStep';
 
-jest.mock('./hooks/use-step', () => jest.fn(() => ({})));
+jest.mock('./hooks/useStep', () => jest.fn(() => ({})));
 
 describe('Step', () => {
   afterAll(() => {

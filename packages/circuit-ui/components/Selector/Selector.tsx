@@ -26,7 +26,7 @@ import {
   disableVisually,
 } from '../../styles/style-mixins';
 import { uniqueId } from '../../util/id';
-import useClickHandler from '../../hooks/use-click-handler';
+import useClickHandler from '../../hooks/useClickHandler';
 import deprecate from '../../util/deprecate';
 
 export interface SelectorProps extends HTMLProps<HTMLInputElement> {

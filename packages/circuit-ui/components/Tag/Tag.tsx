@@ -22,7 +22,7 @@ import { Theme } from '@sumup/design-tokens';
 
 import styled, { StyleProps } from '../../styles/styled';
 import { textMega, focusOutline } from '../../styles/style-mixins';
-import useClickHandler from '../../hooks/use-click-handler';
+import useClickHandler from '../../hooks/useClickHandler';
 import { CloseButton, CloseButtonProps } from '../CloseButton/CloseButton';
 
 interface BaseProps {

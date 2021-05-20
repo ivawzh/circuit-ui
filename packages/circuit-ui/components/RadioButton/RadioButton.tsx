@@ -26,7 +26,7 @@ import {
   focusOutline,
 } from '../../styles/style-mixins';
 import { uniqueId } from '../../util/id';
-import useClickHandler from '../../hooks/use-click-handler';
+import useClickHandler from '../../hooks/useClickHandler';
 
 export interface RadioButtonProps extends HTMLProps<HTMLInputElement> {
   /**
