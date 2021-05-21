@@ -15,97 +15,108 @@
 
 import React, {
   createContext,
-  FC,
-  useState,
   useContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  FC,
   MouseEvent,
   KeyboardEvent,
-  useCallback,
 } from 'react';
+import ReactModal from 'react-modal';
 import { Global, css } from '@emotion/core';
+import noScroll from 'no-scroll';
+
+import { useStack, StackDispatch } from '../../hooks/useStack';
+import { uniqueId } from '../../util/id';
+import IS_IOS from '../../util/ios';
 
 import { Modal, ModalProps } from './Modal';
 
-export type ModalContextValue = {
-  setModal: (modal: ModalProps) => void;
-  removeModal: () => void;
-  isModalOpen: boolean;
-  /**
-   * @deprecated
-   *
-   * If you need access to the `onClose` method or `isOpen` state of the modal,
-   * use the `removeModal` and `isOpen` context properties instead.
-   */
-  getModal: () => ModalProps | null;
-};
+if (typeof window !== 'undefined') {
+  // These are the default app elements in Next.js and CRA.
+  const appElement =
+    document.getElementById('__next') || document.getElementById('root');
 
-export const ModalContext = createContext<ModalContextValue>({
-  setModal: () => {},
-  removeModal: () => {},
-  isModalOpen: false,
-  getModal: () => null,
-});
+  if (appElement) {
+    ReactModal.setAppElement(appElement);
+  } else if (process.env.NODE_ENV !== 'production') {
+    // FIXME: Add error message
+    console.error('');
+  }
+}
 
-export const ModalConsumer = ModalContext.Consumer;
+type ModalState = ModalProps & { id: string };
 
-export const useModal = (): ModalContextValue => useContext(ModalContext);
+export type ModalContextValue = [ModalState[], StackDispatch<ModalState>];
 
-export const ModalProvider: FC<Pick<ModalProps, 'appElement'>> = (props) => {
-  const [isOpen, setOpen] = useState(false);
-  const [modal, setModal] = useState<ModalProps | null>(null);
+export const ModalContext = createContext<ModalContextValue>([[], () => {}]);
 
-  const closeModal = (): void => {
-    window.onpopstate = null;
-    setOpen(false);
-  };
+interface ModalProviderProps {
+  initialState?: ModalState[];
+  htmlOpenClassName?: string;
+}
 
-  const openModal = useCallback((newModal: ModalProps): void => {
-    window.onpopstate = closeModal;
-    setModal(newModal);
-    setOpen(true);
-  }, []);
+export const ModalProvider: FC<ModalProviderProps> = ({
+  children,
+  initialState,
+  htmlOpenClassName = 'ReactModal__Html--open',
+}) => {
+  const [modals, dispatch] = useStack<ModalState>(initialState);
 
-  const { onClose, children, ...modalProps } = modal || {};
+  const isOpen = modals.length > 0;
 
-  const handleClose = useCallback(
-    (event?: MouseEvent | KeyboardEvent): void => {
-      if (onClose) {
-        onClose(event);
+  useEffect(() => {
+    const popModal = () => {
+      dispatch({ type: 'pop' });
+    };
+
+    if (isOpen) {
+      window.onpopstate = popModal;
+      if (IS_IOS) {
+        noScroll.on();
       }
-      closeModal();
-    },
-    [onClose],
-  );
+    } else {
+      window.onpopstate = null;
+      if (IS_IOS) {
+        noScroll.off();
+      }
+    }
 
-  const getModal = useCallback(() => modal, [modal]);
+    return () => {
+      window.onpopstate = null;
+      if (IS_IOS) {
+        noScroll.off();
+      }
+    };
+  }, [dispatch, isOpen]);
 
   return (
-    <ModalContext.Provider
-      value={{
-        setModal: openModal,
-        removeModal: handleClose,
-        isModalOpen: isOpen,
-        getModal,
-      }}
-    >
-      {props.children}
+    <ModalContext.Provider value={[modals, dispatch]}>
+      {children}
 
-      {modal && (
-        <Modal
-          isOpen={isOpen}
-          onClose={handleClose}
-          appElement={props.appElement}
-          {...modalProps}
-        >
-          {children}
-        </Modal>
-      )}
+      {modals.map(({ id, onClose, ...modal }) => {
+        const handleClose = (event?: MouseEvent | KeyboardEvent) => {
+          if (onClose) {
+            onClose(event);
+          }
+          dispatch({ type: 'remove', id });
+        };
+        return (
+          <Modal
+            key={id}
+            {...modal}
+            onClose={handleClose}
+            htmlOpenClassName={htmlOpenClassName}
+          />
+        );
+      })}
 
       {isOpen && (
         <Global
           styles={css`
             /* Remove scroll on the body when react-modal is open */
-            .ReactModal__Html--open {
+            .${htmlOpenClassName} {
               height: 100%;
               overflow-y: hidden;
               -webkit-overflow-scrolling: auto;
@@ -115,4 +126,30 @@ export const ModalProvider: FC<Pick<ModalProps, 'appElement'>> = (props) => {
       )}
     </ModalContext.Provider>
   );
+};
+
+export const useModal = (): {
+  setModal: (newModal: ModalProps) => void;
+  removeModal: () => void;
+} => {
+  const id = useMemo(uniqueId, []);
+  const [modals, dispatch] = useContext(ModalContext);
+
+  const modal = useMemo(() => modals.find((m) => m.id === id), [id, modals]);
+
+  const setModal = useCallback(
+    (newModal: ModalProps): void => {
+      dispatch({ type: 'push', item: { ...newModal, id } });
+    },
+    [dispatch, id],
+  );
+
+  const removeModal = useCallback((): void => {
+    if (modal && modal.onClose) {
+      modal.onClose();
+    }
+    dispatch({ type: 'remove', id });
+  }, [dispatch, id, modal]);
+
+  return { setModal, removeModal };
 };

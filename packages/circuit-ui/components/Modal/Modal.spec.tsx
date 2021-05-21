@@ -19,7 +19,7 @@ import { render, act, userEvent, waitFor } from '../../util/test-utils';
 import Button from '../Button';
 
 import { ModalProps } from './Modal';
-import { ModalConsumer, ModalProvider } from './ModalContext';
+import { ModalProvider, useModal } from './ModalContext';
 import * as MockedModal from './Modal';
 
 describe('Modal', () => {
@@ -28,31 +28,27 @@ describe('Modal', () => {
     (MockedModal as any).TRANSITION_DURATION = 0;
   });
 
-  // eslint-disable-next-line react/prop-types
+  const SetModal = ({ modal }: { modal: ModalProps }) => {
+    const { setModal } = useModal();
+    return (
+      <Button
+        data-testid="button-open"
+        type="button"
+        onClick={() => setModal(modal)}
+      >
+        Open modal
+      </Button>
+    );
+  };
+
   const PageWithModal = ({ modal }: { modal: ModalProps }) => (
-    <div id="root">
-      <ModalProvider>
-        <ModalConsumer>
-          {({ setModal }) => (
-            <Button
-              data-testid="button-open"
-              type="button"
-              onClick={() => {
-                setModal({
-                  ...modal,
-                  appElement: document.getElementById('root') as HTMLElement,
-                });
-              }}
-            >
-              Open modal
-            </Button>
-          )}
-        </ModalConsumer>
-      </ModalProvider>
-    </div>
+    <ModalProvider>
+      <SetModal modal={modal} />
+    </ModalProvider>
   );
 
   const defaultModal: ModalProps = {
+    isOpen: true,
     // eslint-disable-next-line react/prop-types, react/display-name
     children: ({ onClose }) => (
       <div>

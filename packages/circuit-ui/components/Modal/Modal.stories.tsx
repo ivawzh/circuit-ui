@@ -26,7 +26,7 @@ import Body from '../Body';
 
 import docs from './Modal.docs.mdx';
 import { ModalWrapper, ModalHeader, ModalFooter } from './components';
-import { ModalConsumer, ModalProvider } from './ModalContext';
+import { ModalProvider, useModal } from './ModalContext';
 import { Modal, ModalProps } from './Modal';
 
 export default {
@@ -37,26 +37,23 @@ export default {
   },
 };
 
-/* eslint-disable react/display-name, react/prop-types */
+const SetModal = ({ modal }: { modal: ModalProps }) => {
+  const { setModal } = useModal();
+  return (
+    <Button type="button" onClick={() => setModal(modal)}>
+      Open modal
+    </Button>
+  );
+};
 
 const PageWithModal = (modal: ModalProps) => (
   <ModalProvider>
-    <ModalConsumer>
-      {({ setModal }) => (
-        <Button
-          type="button"
-          onClick={() => {
-            setModal(modal);
-          }}
-        >
-          Open modal
-        </Button>
-      )}
-    </ModalConsumer>
+    <SetModal modal={modal} />
   </ModalProvider>
 );
 
 const defaultModal = {
+  // eslint-disable-next-line react/display-name
   children: () => <ModalWrapper>Hello World!</ModalWrapper>,
   onClose: () => {},
 };
