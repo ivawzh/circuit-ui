@@ -83,7 +83,7 @@ type ContainerProps = Pick<
   'orientation' | 'gapSize' | 'stretch'
 >;
 
-const stretchStyles = ({ stretch = true }: StyleProps & ContainerProps) => css`
+const stretchStyles = ({ stretch = false }: StyleProps & ContainerProps) => css`
   display: ${stretch ? 'flex' : 'inline-flex'};
   align-items: ${stretch ? 'stretch' : 'flex-start'};
   width: ${stretch ? '100%' : 'auto'};
@@ -92,7 +92,7 @@ const stretchStyles = ({ stretch = true }: StyleProps & ContainerProps) => css`
 const orientationStyles = ({
   theme,
   gapSize = 'mega',
-  orientation = 'vertical',
+  orientation = 'horizontal',
 }: StyleProps & ContainerProps) => css`
   flex-direction: ${orientation === 'vertical' ? 'column' : 'row'};
 
