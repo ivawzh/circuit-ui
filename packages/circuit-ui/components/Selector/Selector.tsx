@@ -80,8 +80,6 @@ type LabelElProps = { hasFocus: boolean } & Pick<
   'disabled' | 'noMargin' | 'size' | 'checked'
 >;
 
-const LABEL_BORDER_RADIUS = '8px';
-
 const outlineStyles = ({
   theme,
   checked,
@@ -118,7 +116,7 @@ const baseStyles = ({ theme, checked }: StyleProps & LabelElProps) => css`
   position: relative;
   margin-bottom: ${theme.spacings.mega};
   border: none;
-  border-radius: ${LABEL_BORDER_RADIUS};
+  border-radius: ${theme.borderRadius.tera};
   transition: box-shadow 0.1s ease-in-out;
   ${textMega({ theme })};
 

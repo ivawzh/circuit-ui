@@ -57,7 +57,7 @@ export interface SelectorGroupProps {
    */
   multiple?: boolean;
   /**
-   * Whether to layout Selectors in a row or a column. Default: 'vertical'.
+   * Whether to layout Selectors in a row or a column. Default: 'horizontal'.
    */
   orientation?: 'vertical' | 'horizontal';
   /**

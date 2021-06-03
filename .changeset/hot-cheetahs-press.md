@@ -1,5 +1,5 @@
 ---
-'@sumup/circuit-ui': minor
+'@sumup/circuit-ui': major
 ---
 
 - Add `size` prop to `Selector`
